@@ -13,3 +13,20 @@ datasource db {
   provider = "mysql"
   url      = env("DATABASE_URL")
 }
+
+enum UserStatus {
+  OFFLINE
+  ONLINE
+}
+
+model User {
+  id Int @id @default(autoincrement())
+  name String
+  email String @unique
+  password String
+  status UserStatus @default(OFFLINE)
+  messagesSent Message[] @relation("SentMessages")
+  messagesReceived Message[] @relation("ReceivedMessages")
+  createdAt DateTime @default(now())
+  updateAt DateTime @updatedAt
+}
