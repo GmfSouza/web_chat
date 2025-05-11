@@ -30,3 +30,13 @@ model User {
   createdAt DateTime @default(now())
   updateAt DateTime @updatedAt
 }
+
+model Message {
+  id Int @id @default(autoincrement())
+  content String
+  sender User @relation("SentMessages", fields: [senderId], references: [id])
+  senderId Int
+  receiver User @relation("ReceivedMessages", fields: [receiverId], references: [id])
+  receiverId Int
+  createdAt DateTime @default(now())
+}
