@@ -1,12 +1,5 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
-  output   = "../generated/prisma"
 }
 
 datasource db {
@@ -14,29 +7,32 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-enum UserStatus {
-  OFFLINE
-  ONLINE
-}
-
 model User {
-  id               Int @id @default(autoincrement())
+  id               Int        @id @default(autoincrement())
   name             String
-  email            String @unique
+  email            String     @unique
   password         String
   status           UserStatus @default(OFFLINE)
-  messagesSent     Message[] @relation("SentMessages")
-  messagesReceived Message[] @relation("ReceivedMessages")
-  createdAt        DateTime @default(now())
-  updateAt         DateTime @updatedAt
+  createdAt        DateTime   @default(now())
+  updateAt         DateTime   @updatedAt
+  messagesReceived Message[]  @relation("ReceivedMessages")
+  messagesSent     Message[]  @relation("SentMessages")
 }
 
 model Message {
-  id         Int @id @default(autoincrement())
+  id         Int      @id @default(autoincrement())
   content    String
-  sender     User @relation("SentMessages", fields: [senderId], references: [id])
   senderId   Int
-  receiver   User @relation("ReceivedMessages", fields: [receiverId], references: [id])
   receiverId Int
   createdAt  DateTime @default(now())
+  receiver   User     @relation("ReceivedMessages", fields: [receiverId], references: [id])
+  sender     User     @relation("SentMessages", fields: [senderId], references: [id])
+
+  @@index([receiverId], map: "Message_receiverId_fkey")
+  @@index([senderId], map: "Message_senderId_fkey")
+}
+
+enum UserStatus {
+  OFFLINE
+  ONLINE
 }
