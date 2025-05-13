@@ -4,8 +4,9 @@ import {
   IsString,
   IsStrongPassword,
 } from 'class-validator';
+import { IsStrongPasswordCustom } from 'src/common/decorators/strong-password.decorator';
 
-export class RegisterDto {
+export class CreateUserDto {
     @IsNotEmpty()
     @IsString()
     name: string;
@@ -15,9 +16,6 @@ export class RegisterDto {
     email: string;
 
     @IsNotEmpty()
-    @IsStrongPassword({
-      minLength: 8,
-      minNumbers: 2,
-    })
+    @IsStrongPasswordCustom()
     password: string;
 }
