@@ -1,9 +1,10 @@
-import { HttpException, HttpStatus, Injectable, UnauthorizedException } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { CreateUserDto } from 'src/users/dtos/create-user.dto';
 import { UsersService } from 'src/users/users.service';
 import { LoginDto } from './dtos/login.dto';
 import { compare } from 'bcrypt';
+import { User } from '@prisma/client';
 
 @Injectable()
 export class AuthService {
@@ -18,7 +19,7 @@ export class AuthService {
         return this.generateToken(newUser)
     }
 
-    async generateToken (user: any) {
+    private async generateToken (user: User) {
         const payload = {
             sub: user.id,
             email: user.email,
@@ -31,20 +32,19 @@ export class AuthService {
 
     async validateUser (email: string, password: string) {
         const user = await this.usersService.findByEmail(email);
-        if (!user) return null;
-
+         if (!user) {
+            throw new HttpException('Invalid credentials', HttpStatus.UNAUTHORIZED)
+        }
         const validPassword = await compare(password, user.password);
-        if(!validPassword) return null;
+        if(!validPassword) {
+            throw new HttpException('Invalid credentials', HttpStatus.UNAUTHORIZED)
+        }
 
         return user;
     }
 
     async login (dto: LoginDto) {
         const user = await this.validateUser(dto.email, dto.password);
-        if (!user) {
-            throw new HttpException('Invalid credentials', HttpStatus.UNAUTHORIZED)
-        }
-
         return this.generateToken(user)
     }
 }
