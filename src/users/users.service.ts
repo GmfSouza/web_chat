@@ -1,8 +1,9 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateUserDto } from './dtos/create-user.dto';
-import { hash } from 'bcrypt';
+import { compare, hash } from 'bcrypt';
 import { randomInt } from 'crypto';
+import { UpdatePasswordDto } from './dtos/update-password.dto';
 
 @Injectable()
 export class UsersService {
@@ -20,6 +21,37 @@ export class UsersService {
         return await this.prisma.user.create({
             data:{...dto, password: hashPassword}
         });
+    }
+
+    async updatePassword(id: number, dto: UpdatePasswordDto) {
+        const user = await this.findById(id);
+        if (!user) {
+            throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+        }
+
+        const areEqual = await compare(dto.currentPass, user.password);
+        if (!areEqual) {
+            throw new HttpException('The current password is incorrect', HttpStatus.UNAUTHORIZED);
+        }
+
+        const match = dto.newPass === dto.confirmPass;
+        if (!match) {
+            throw new HttpException('The passwords do not match', HttpStatus.BAD_REQUEST);
+        }
+
+        const randomSalt = randomInt(10, 16);
+        const hashPassword = await hash(dto.newPass, randomSalt);
+
+        return await this.prisma.user.update({
+            where: { id },
+            data: { password: hashPassword},
+            select: {
+                id: true,
+                name: true,
+                email: true,
+                status: true,
+            }
+        })
     }
 
     async findByEmail(email: string) {
