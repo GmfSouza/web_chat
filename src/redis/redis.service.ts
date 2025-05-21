@@ -41,20 +41,12 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
     }
 
     async set(key: string, value: string, ttl?: number): Promise<void> {
-        try {
-            ttl
-                ? await this.client.set(key, value, "EX", ttl)
-                : await this.client.set(key, value);
-        } catch (error) {
-            throw error;
-        }
+        ttl
+            ? await this.client.set(key, value, "EX", ttl)
+            : await this.client.set(key, value);
     }
 
     async get(key: string): Promise<string | null> {
-        try {
-            return await this.client.get(key);
-        } catch (error) {
-            throw error;
-        }
+        return await this.client.get(key);
     }
 }
