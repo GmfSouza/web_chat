@@ -26,6 +26,7 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
         try {
             await this.client.ping();
         } catch (error) {
+            console.error("RedisService: Error during onModuleInit:", error);
         }
     }
 
